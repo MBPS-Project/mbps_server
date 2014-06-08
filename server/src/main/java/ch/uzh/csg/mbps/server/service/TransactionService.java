@@ -104,8 +104,9 @@ public class TransactionService implements ITransaction {
 			throw new TransactionException(PAYMENT_REFUSE);
 		}
 		
-		if (!transactionNumbersValid(buyerTransaction, buyerAccount.getTransactionNumber(), sellerTransaction, sellerAccount.getTransactionNumber()))
-			throw new TransactionException(PAYMENT_REFUSE);
+		//TODO jeton: fix!
+//		if (!transactionNumbersValid(buyerTransaction, buyerAccount.getTransactionNumber(), sellerTransaction, sellerAccount.getTransactionNumber()))
+//			throw new TransactionException(PAYMENT_REFUSE);
 		
 		if (!transactionRequestsIdentic(buyerTransaction, sellerTransaction))
 			throw new TransactionException(PAYMENT_REFUSE);
@@ -162,7 +163,9 @@ public class TransactionService implements ITransaction {
 	}
 	
 	private boolean userRequestValid(UserAccount userAccount, SignedObject signedObject) throws Exception {
-		return KeyHandler.verifyObject(signedObject, userAccount.getPublicKey());
+		//TODO jeton: fix!
+//		return KeyHandler.verifyObject(signedObject, userAccount.getPublicKey());
+		return false;
 	}
 	
 }

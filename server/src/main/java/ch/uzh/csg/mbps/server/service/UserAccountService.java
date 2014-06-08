@@ -136,12 +136,13 @@ public class UserAccountService implements IUserAccount {
 			return false;
 		}
 		
-		String privateKeyEncoded = KeyHandler.encodePrivateKey(keyPair.getPrivate());
-		userAccount.setPrivateKey(privateKeyEncoded);
-		String publicKeyEncoded = KeyHandler.encodePublicKey(keyPair.getPublic());
-		userAccount.setPublicKey(publicKeyEncoded);
-		
-		userAccount.setTransactionNumber(0);
+		//TODO jeton: fix!
+//		String privateKeyEncoded = KeyHandler.encodePrivateKey(keyPair.getPrivate());
+//		userAccount.setPrivateKey(privateKeyEncoded);
+//		String publicKeyEncoded = KeyHandler.encodePublicKey(keyPair.getPublic());
+//		userAccount.setPublicKey(publicKeyEncoded);
+//		
+//		userAccount.setTransactionNumber(0);
 		userAccount.setPaymentAddress(paymentAddress);
 		
 		String token = java.util.UUID.randomUUID().toString();
