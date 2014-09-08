@@ -59,7 +59,17 @@ public class MensaXLSExporter {
 				int txMonth= transactionCalendar.get(Calendar.MONTH);;
 				if (day == txDay && month == txMonth) {	
 					HSSFRow row = sheet.createRow((short) rowIndex);
-					row.createCell((short) 0).setCellValue(tx.getBuyer() + "/" + tx.getSeller());
+					String buyer;
+					String seller;
+					if (tx.getBuyer().equals("MensaBinz"))
+						buyer = tx.getBuyer();
+					else
+						buyer = "*";
+					if(tx.getSeller().equals("MensaBinz"))
+						seller = tx.getSeller();
+					else
+						seller = "*";
+					row.createCell((short) 0).setCellValue(buyer + "/" + seller);
 					row.createCell((short) 1).setCellValue(tx.getTimestamp().toString());
 					row.createCell((short) 2).setCellValue(tx.getInputCurrency());
 					BigDecimal inputCurrencyAmount = tx.getInputCurrencyAmount();
