@@ -233,7 +233,7 @@ public class BitcoinJSONRPCClient implements Bitcoin {
                 throw new BitcoinRPCException("RPC Query Failed (method: "+ method +", params: " + Arrays.deepToString(o) + ", response header: "+ responseCode + " " + conn.getResponseMessage() + ", response: " + new String(loadStream(conn.getErrorStream(), true)));
             return loadResponse(conn.getInputStream(), "1", true);
         } catch (IOException ex) {
-        	ex.printStackTrace();
+        	logger.log(Level.SEVERE, null, ex);
             throw new BitcoinRPCException("RPC Query Failed (method: "+ method +", params: " + Arrays.deepToString(o) + ")", ex);
         }
     }
