@@ -2,9 +2,6 @@ package ch.uzh.csg.mbps.server.util;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 import net.minidev.json.parser.ParseException;
 
@@ -45,17 +42,17 @@ public class HourlyTask {
 		//check if enough Bitcoins are available in the system
 		sanityCheck();
 
-		//Check for MensaXLS Export
-		Date date = new Date();
-		Calendar calendar = GregorianCalendar.getInstance();
-		calendar.setTime(date);
-		int hour = calendar.get(Calendar.HOUR_OF_DAY); // hour formatted in 24h
+		//TODO: Mensa Test Run Method
+		/**Check for MensaXLS Export in test run**/
+//		Date date = new Date();
+//		Calendar calendar = GregorianCalendar.getInstance();
+//		calendar.setTime(date);
+//		int hour = calendar.get(Calendar.HOUR_OF_DAY); // hour formatted in 24h
 
-		//TODO: for mensa testrun only, delete afterwards
 		//do mensa export
-		if(hour == 23){
-			mensaXLSExporter.doQuery();
-		}
+//		if(hour == 23){
+//			mensaXLSExporter.doQuery();
+//		}
 	}
 
 	/**

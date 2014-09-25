@@ -1,12 +1,8 @@
 package ch.uzh.csg.mbps.server.service;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import net.minidev.json.parser.ParseException;
-
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,18 +22,13 @@ import ch.uzh.csg.mbps.server.dao.UserPublicKeyDAO;
 import ch.uzh.csg.mbps.server.domain.DbTransaction;
 import ch.uzh.csg.mbps.server.domain.UserAccount;
 import ch.uzh.csg.mbps.server.security.KeyHandler;
-import ch.uzh.csg.mbps.server.util.BitstampController;
 import ch.uzh.csg.mbps.server.util.Constants;
-import ch.uzh.csg.mbps.server.util.Emailer;
 import ch.uzh.csg.mbps.server.util.exceptions.PayOutRuleNotFoundException;
 import ch.uzh.csg.mbps.server.util.exceptions.TransactionException;
 import ch.uzh.csg.mbps.server.util.exceptions.UserAccountNotFoundException;
 import ch.uzh.csg.mbps.util.Converter;
 
 import com.azazar.bitcoin.jsonrpcclient.BitcoinException;
-import com.xeiam.xchange.ExchangeException;
-import com.xeiam.xchange.NotAvailableFromExchangeException;
-import com.xeiam.xchange.NotYetImplementedForExchangeException;
 
 /**
  * Service class for {@link DbTransaction} between two {@link UserAccount}s.
@@ -53,7 +44,7 @@ public class TransactionService implements ITransaction {
 	public static final String PAYMENT_REFUSE = "The server refused the payment.";
 	public static final String NOT_AUTHENTICATED_USER = "Only the authenticated user can act as the payer in the payment.";
 
-	private static Logger LOGGER = Logger.getLogger(TransactionService.class);
+//	private static Logger LOGGER = Logger.getLogger(TransactionService.class);
 
 	@Autowired 
 	private TransactionDAO transactionDAO;
@@ -184,7 +175,7 @@ public class TransactionService implements ITransaction {
 			}
 		}
 		transactionDAO.createTransaction(dbTransaction, payerUserAccount, payeeUserAccount);
-		checkForMensaOrExchangePointTransactions(dbTransaction, payerUserAccount, payeeUserAccount);
+//		checkForMensaOrExchangePointTransactions(dbTransaction, payerUserAccount, payeeUserAccount);
 		
 
 		//check if user account balance limit has been exceeded (according to PayOutRules)
@@ -215,80 +206,81 @@ public class TransactionService implements ITransaction {
 		return signedResponse;
 	}
 
-	private static BigDecimal openSellOrders = BigDecimal.ZERO;
-	private static BigDecimal openBuyOrders = BigDecimal.ZERO;
+	//TODO: Mensa Test Run Method
+	/**Used for Mensa Test Run to do immediate Bitstamp Trades. **/ 
+	
+//	private static BigDecimal openSellOrders = BigDecimal.ZERO;
+//	private static BigDecimal openBuyOrders = BigDecimal.ZERO;
 
-	//TODO: for Mensa Test Run only, delete afterwards
-	//TODO simon: test
-	private void checkForMensaOrExchangePointTransactions(DbTransaction dbTransaction, UserAccount payerUserAccount, UserAccount payeeUserAccount) {
-		BigDecimal amount = dbTransaction.getAmount();
-		String transactionID = "";
-
-		if (payerUserAccount.getUsername().equals("ExchangePoint") || payerUserAccount.getUsername().equals("MensaBinz")) {
-			BigDecimal totalAmountBTC = amount.add(openBuyOrders);
-			BigDecimal totalAmountUSD = BigDecimal.ZERO;
-			try {
-				totalAmountUSD = totalAmountBTC.multiply(BitstampController.getExchangeRate());
-			} catch (ExchangeException | NotAvailableFromExchangeException
-					| NotYetImplementedForExchangeException | IOException e1) {
-				LOGGER.error("Bitstamp Transaction Error: Couldn't get Bitstamp ExchangeRate.");
-			}
-
-			if (totalAmountUSD.compareTo(new BigDecimal(5)) == 1) {
-				try {
-					transactionID = BitstampController.buyBTC(totalAmountBTC);
-					LOGGER.info("Bitstamp Transaction Successful: A Limitorder to buy " + totalAmountBTC + " BTC has been placed on Bitstamp with ID: " + transactionID);
-					synchronized (openBuyOrders) {
-						openBuyOrders = BigDecimal.ZERO;
-					}
-				} catch (ExchangeException | NotAvailableFromExchangeException
-						| NotYetImplementedForExchangeException | IOException| ParseException e) {
-					LOGGER.error("Bitstamp Transaction Error: failed to do buyBTC limit order (ID: " + transactionID + "): " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
-					Emailer.send("simon.kaeser@uzh.ch", "Bitstamp Transaction Error", "Bitstamp Transaction Error: failed to do buyBTC limit order: " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
-					synchronized (openBuyOrders) {
-						openBuyOrders = openBuyOrders.add(amount);	                    
-                    }
-					
-				}
-			} else {
-				synchronized (openBuyOrders) {
-					openBuyOrders = openBuyOrders.add(amount);	                    
-                }
-			}
-		}
-
-		if (payeeUserAccount.getUsername().equals("MensaBinz") || payeeUserAccount.getUsername().equals("ExchangePoint")) {
-			BigDecimal totalAmountBTC = amount.add(openSellOrders);
-			BigDecimal totalAmountUSD = BigDecimal.ZERO;
-			try {
-				totalAmountUSD = totalAmountBTC.multiply(BitstampController.getExchangeRate());
-			} catch (ExchangeException | NotAvailableFromExchangeException
-					| NotYetImplementedForExchangeException | IOException e1) {
-				LOGGER.error("Bitstamp Transaction Error: Couldn't get Bitstamp ExchangeRate.");
-			}
-
-			if (totalAmountUSD.compareTo(new BigDecimal(5)) == 1) {
-				try {
-					transactionID = BitstampController.sellBTC(totalAmountBTC);
-					LOGGER.info("Bitstamp Transaction Successful: A Limitorder to sell " + totalAmountBTC + " BTC has been placed on Bitstamp with ID: " + transactionID);
-					synchronized (openSellOrders) {
-						openSellOrders = BigDecimal.ZERO;
-					}
-				} catch (ExchangeException | NotAvailableFromExchangeException
-						| NotYetImplementedForExchangeException | IOException e) {
-					LOGGER.error("Bitstamp Transaction Error: failed to do sellBTC limit order (ID: " + transactionID + "): " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
-					Emailer.send("simon.kaeser@uzh.ch", "Bitstamp Transaction Error", "Bitstamp Transaction Error: failed to do sellBTC limit order: " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
-					synchronized (openSellOrders) {
-						openSellOrders = openSellOrders.add(amount);
-					}
-				}
-			} else {
-				synchronized (openSellOrders) {
-					openSellOrders = openSellOrders.add(amount);
-				}
-			}
-		}
-	}
+//	private void checkForMensaOrExchangePointTransactions(DbTransaction dbTransaction, UserAccount payerUserAccount, UserAccount payeeUserAccount) {
+//		BigDecimal amount = dbTransaction.getAmount();
+//		String transactionID = "";
+//
+//		if (payerUserAccount.getUsername().equals("ExchangePoint") || payerUserAccount.getUsername().equals("MensaBinz")) {
+//			BigDecimal totalAmountBTC = amount.add(openBuyOrders);
+//			BigDecimal totalAmountUSD = BigDecimal.ZERO;
+//			try {
+//				totalAmountUSD = totalAmountBTC.multiply(BitstampController.getExchangeRate());
+//			} catch (ExchangeException | NotAvailableFromExchangeException
+//					| NotYetImplementedForExchangeException | IOException e1) {
+//				LOGGER.error("Bitstamp Transaction Error: Couldn't get Bitstamp ExchangeRate.");
+//			}
+//
+//			if (totalAmountUSD.compareTo(new BigDecimal(5)) == 1) {
+//				try {
+//					transactionID = BitstampController.buyBTC(totalAmountBTC);
+//					LOGGER.info("Bitstamp Transaction Successful: A Limitorder to buy " + totalAmountBTC + " BTC has been placed on Bitstamp with ID: " + transactionID);
+//					synchronized (openBuyOrders) {
+//						openBuyOrders = BigDecimal.ZERO;
+//					}
+//				} catch (ExchangeException | NotAvailableFromExchangeException
+//						| NotYetImplementedForExchangeException | IOException| ParseException e) {
+//					LOGGER.error("Bitstamp Transaction Error: failed to do buyBTC limit order (ID: " + transactionID + "): " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
+//					Emailer.send("simon.kaeser@uzh.ch", "Bitstamp Transaction Error", "Bitstamp Transaction Error: failed to do buyBTC limit order: " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
+//					synchronized (openBuyOrders) {
+//						openBuyOrders = openBuyOrders.add(amount);	                    
+//                    }
+//					
+//				}
+//			} else {
+//				synchronized (openBuyOrders) {
+//					openBuyOrders = openBuyOrders.add(amount);	                    
+//                }
+//			}
+//		}
+//
+//		if (payeeUserAccount.getUsername().equals("MensaBinz") || payeeUserAccount.getUsername().equals("ExchangePoint")) {
+//			BigDecimal totalAmountBTC = amount.add(openSellOrders);
+//			BigDecimal totalAmountUSD = BigDecimal.ZERO;
+//			try {
+//				totalAmountUSD = totalAmountBTC.multiply(BitstampController.getExchangeRate());
+//			} catch (ExchangeException | NotAvailableFromExchangeException
+//					| NotYetImplementedForExchangeException | IOException e1) {
+//				LOGGER.error("Bitstamp Transaction Error: Couldn't get Bitstamp ExchangeRate.");
+//			}
+//
+//			if (totalAmountUSD.compareTo(new BigDecimal(5)) == 1) {
+//				try {
+//					transactionID = BitstampController.sellBTC(totalAmountBTC);
+//					LOGGER.info("Bitstamp Transaction Successful: A Limitorder to sell " + totalAmountBTC + " BTC has been placed on Bitstamp with ID: " + transactionID);
+//					synchronized (openSellOrders) {
+//						openSellOrders = BigDecimal.ZERO;
+//					}
+//				} catch (ExchangeException | NotAvailableFromExchangeException
+//						| NotYetImplementedForExchangeException | IOException e) {
+//					LOGGER.error("Bitstamp Transaction Error: failed to do sellBTC limit order (ID: " + transactionID + "): " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
+//					Emailer.send("simon.kaeser@uzh.ch", "Bitstamp Transaction Error", "Bitstamp Transaction Error: failed to do sellBTC limit order: " + e.getMessage() + " Transaction Details: " + dbTransaction.toString());
+//					synchronized (openSellOrders) {
+//						openSellOrders = openSellOrders.add(amount);
+//					}
+//				}
+//			} else {
+//				synchronized (openSellOrders) {
+//					openSellOrders = openSellOrders.add(amount);
+//				}
+//			}
+//		}
+//	}
 
 	@Transactional(readOnly = true)
 	public List<HistoryTransaction> getAll() {

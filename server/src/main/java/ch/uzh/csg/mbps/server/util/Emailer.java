@@ -185,7 +185,7 @@ public class Emailer {
 		sendEmail(user.getEmail(), null);
 	}
 
-	//TODO: for mensa testrun only, delete afterwards
+	//TODO: Mensa Test Run Method
 	/**
 	 * Sends an xls Report with the daily transactions for Account "MensaBinz"
 	 * to the defined email recipients.
