@@ -39,7 +39,7 @@ public class Emailer {
 	public static void sendEmailConfirmationLink(String confirmationID, String toEmail){
 		String link = SecurityConfig.BASE_URL + "/user/verify/" + confirmationID;
 		messageText = "Please verify your account by clicking on the following link: <a href = \"" + link + "\">" + link + "</a>";
-		subject = "MBPS Account Verification";
+		subject = "CoinBlesk Account Verification";
 		sendEmail(toEmail, null);
 	}
 
@@ -52,7 +52,7 @@ public class Emailer {
 	public static void sendResetPasswordLink(UserAccount user, String resetPWToken) {
 		String link = SecurityConfig.BASE_URL + "/user/resetPassword/" + resetPWToken;
 		messageText = "Dear " + user.getUsername() + ",<br><br>Please reset your account password by clicking on the following link: <a href = \"" + link + "\">" + link + "</a>";
-		subject = "MBPS Account Password Reset";
+		subject = "CoinBlesk Account Password Reset";
 		sendEmail(user.getEmail(), null);
 	}
 
@@ -64,7 +64,7 @@ public class Emailer {
 	 */
 	public static void sendHistoryCSV(String userName, String email, File file) {
 		messageText = "Dear " + userName + ",<br><br>Attached you can find the requested history list.";
-		subject = "MBPS history list";
+		subject = "CoinBlesk history list";
 		sendEmail(email, file);
 	}
 
@@ -155,7 +155,7 @@ public class Emailer {
 
 	public static void sendPayInAddressAsEmail(String username,String email, String payInAddress){
 		messageText ="Dear " + username +",<br><br>Your pay in address is " + payInAddress +".";
-		subject = "MBPS Pay In Address";
+		subject = "CoinBlesk Pay In Address";
 		sendEmail(email,null);
 	}
 
@@ -168,7 +168,7 @@ public class Emailer {
 	public static void sendUpdateRoleBothLink(UserAccount user) {
 		String link = SecurityConfig.BASE_URL;
 		messageText = "Dear " + user.getUsername() + ",<br><br>Your account was updated! Now, you gained administration rights for the server at the following link:  <a href = \"" + link + "\">" + link + "</a>";
-		subject = "MBPS Update Account";
+		subject = "CoinBlesk Update Account";
 		sendEmail(user.getEmail(), null);
 	}
 
@@ -181,7 +181,7 @@ public class Emailer {
 		String server = SecurityConfig.BASE_URL;
 		String link = SecurityConfig.BASE_URL + "/user/createAdmin/" + adminPWToken;
 		messageText = "Dear " + user.getUsername() + ",<br><br>You are invited to adminsitred the following website: <a href = \"" + server + "\">" + server + "</a>. To create an account, please enter your credentials on the follwowing link: <a href = \"" + link + "\">" + link + "</a>";
-		subject = "MBPS Admin Account";
+		subject = "CoinBlesk Admin Account";
 		sendEmail(user.getEmail(), null);
 	}
 
